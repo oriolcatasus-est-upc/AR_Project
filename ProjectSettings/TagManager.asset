@@ -16,6 +16,7 @@ TagManager:
   - c_yellow
   - c_green
   - fb_texto
+  - counter_texto
   layers:
   - Default
   - TransparentFX

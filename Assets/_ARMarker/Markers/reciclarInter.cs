@@ -12,6 +12,8 @@ public class reciclarInter : MonoBehaviour
     private GameObject tapa, txt, obj;
     private string msg;
 
+    private bool interaction = false;
+
     // Agregar el objeto activado a la lista
     private void OnTriggerEnter(Collider other)
     {
@@ -40,7 +42,7 @@ public class reciclarInter : MonoBehaviour
     {
         _objectsInteractingWith.Add(recIn);
         // Realizar la interacción
-        Interact(T,obj);
+        Interact(T, obj);
     }
 
     private void RemoveObject(reciclarInter recIn)
@@ -83,7 +85,7 @@ public class reciclarInter : MonoBehaviour
     {
         txt = GameObject.FindWithTag("fb_texto");
         text = txt.gameObject.GetComponent<TextMeshProUGUI>();
-        
+
         if (T.Substring(0,2) == tag.Substring(0,2))
         {
             // Realizar interacción si las etiquetas coinciden
@@ -103,17 +105,26 @@ public class reciclarInter : MonoBehaviour
             if(tapa.transform.localRotation.x != 0)
             {
                 // Realizar acciones si la tapa está abierta
+                if (interaction)
+                {
+                    return;
+                }
+                interaction = true;
                 text.color = Color.green;
                 msg = "¡Correcto!";
                 StartCoroutine(msgWait(msg));
-                if(obj.tag.Substring(3,1) == "o")
+                if (obj.tag.Substring(3,1) == "o")
                 {
                     StartCoroutine(pre(tapa, obj));
+                    var counterText = GameObject.FindWithTag("counter_texto").GetComponent<TextMeshProUGUI>();
+                    var counterNum = int.Parse(counterText.text);
+                    ++counterNum;
+                    counterText.text = counterNum.ToString();
                 }
-                else
+                /*else
                 {
                     StartCoroutine(pre(tapa, this.gameObject));
-                }
+                }*/
             }
             else
             {
@@ -146,19 +157,26 @@ public class reciclarInter : MonoBehaviour
     private IEnumerator pre(GameObject tapa, GameObject obj)
     {
         Coroutine co;
-        co = StartCoroutine(entra(tapa,obj));
-        yield return new WaitForSeconds(2);
+        var scale = obj.transform.localScale;
+        var rotation = obj.transform.rotation;
+        co = StartCoroutine(entra(obj));
+        yield return new WaitForSeconds(1);
         StopCoroutine(co);
         obj.SetActive(false);
+        obj.transform.localScale = scale;
+        obj.transform.rotation = rotation;
+        interaction = false;
     }
 
     // Animación de entrada (rotación continua)
-    private IEnumerator entra(GameObject tapa, GameObject obj)
+    private IEnumerator entra(GameObject obj)
     {
         while(true)
         {
-            obj.transform.RotateAround(obj.transform.position,Vector3.right,25f);
-            yield return null;
+            obj.transform.Rotate(new Vector3(-12, 0, 0));
+            var scale = obj.transform.localScale;
+            obj.transform.localScale = new Vector3(scale.x * 0.98f, scale.y * 0.98f, scale.z * 0.98f);
+            yield return new WaitForFixedUpdate();
         }
     }
 }
